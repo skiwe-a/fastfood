@@ -1,0 +1,353 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-cairo);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.637 0.237 25.331);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.637 0.237 25.331);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.704 0.191 22.216);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.704 0.191 22.216);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-cairo), "Cairo", sans-serif;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+  }
+}
+
+/* ===== FASTfood Restaurant Custom Styles ===== */
+
+/* Swiper Slider Styles */
+.swiper {
+  width: 100%;
+  height: 100vh;
+}
+.swiper-slide {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0 !important;
+  transition: opacity 1.2s ease-in-out;
+}
+.swiper-slide-active {
+  opacity: 1 !important;
+}
+.slide-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  align-items: center;
+  padding: 0 5%;
+  width: 100%;
+  height: 100%;
+  gap: 2rem;
+}
+
+/* Food Image Animations */
+@keyframes zoomInSoft {
+  0% { transform: scale(0.85) translateY(30px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+@keyframes floatingSoft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.food-image {
+  max-width: 90%;
+  filter: drop-shadow(0 25px 30px rgba(0,0,0,0.2));
+  opacity: 0;
+  transition: filter 0.3s ease;
+}
+.swiper-slide-active .food-image {
+  animation:
+    zoomInSoft 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards,
+    floatingSoft 4s ease-in-out infinite 1.5s;
+}
+
+/* Dynamic gradient background */
+.bg-dynamic-gradient {
+  background: linear-gradient(135deg, #ffffff 50%, #ffefef 50%, #ff4d4d 100%);
+  transition: background 1.2s ease-in-out;
+}
+
+/* Header glass effect */
+.header-glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Outline text */
+.outline-text {
+  -webkit-text-stroke: 1px currentColor;
+  color: transparent;
+  text-transform: uppercase;
+}
+.outline-text-sm {
+  -webkit-text-stroke: 1px #ef4444;
+  color: transparent;
+  font-weight: 900;
+}
+
+/* Swiper thumbnail active */
+.menu-thumb {
+  cursor: pointer;
+  transition: all 0.4s ease;
+  border: 2px solid transparent;
+}
+.menu-thumb.active {
+  border-color: #f59e0b;
+  background-color: #fef3c7;
+  transform: scale(1.1);
+}
+
+/* Menu card hover effects */
+.menu-card:hover .food-card-img {
+  transform: scale(1.08) rotate(2deg);
+}
+.food-card-img {
+  transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+}
+
+/* Category pill active */
+.category-pill {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+.category-pill.active {
+  background-color: #ef4444;
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2);
+}
+
+/* Food card hover effects */
+.food-card {
+  transition: all 0.5s ease;
+  border-radius: 2.5rem;
+}
+.food-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 30px 50px rgba(0,0,0,0.1);
+}
+.food-card img {
+  transition: transform 0.5s ease;
+}
+.food-card:hover img {
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* Cart item hover */
+.cart-item {
+  transition: all 0.3s ease;
+}
+.cart-item:hover {
+  background-color: #fef2f2;
+  transform: scale(1.01);
+}
+
+/* Quantity buttons */
+.qty-btn {
+  transition: all 0.2s;
+  user-select: none;
+}
+.qty-btn:active {
+  transform: scale(0.9);
+}
+
+/* Value card and team card hover */
+.value-card, .team-card {
+  transition: all 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+}
+.value-card:hover, .team-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 25px 35px -12px rgba(0,0,0,0.15);
+}
+
+/* Value card icon glow */
+.icon-bg-glow {
+  transition: box-shadow 0.3s;
+}
+.value-card:hover .icon-bg-glow {
+  box-shadow: 0 0 0 6px rgba(239,68,68,0.2);
+}
+
+/* No scrollbar utility */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Swiper pagination customization */
+.swiper-pagination-bullet {
+  background: #fff;
+  opacity: 0.7;
+}
+.swiper-pagination-bullet-active {
+  background: #f59e0b;
+  transform: scale(1.2);
+}
+
+/* Add to cart button */
+.add-to-cart {
+  transition: all 0.3s ease;
+}
+.add-to-cart:active {
+  transform: scale(0.9);
+}
+
+/* Stat number tabular */
+.stat-number {
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+}
+
+/* Price tag */
+.price-tag {
+  font-weight: 900;
+}
+
+/* Bounce slow animation */
+.animate-bounce-slow {
+  animation: bounce 3s infinite;
+}
+
+/* Responsive swiper for mobile */
+@media (max-width: 768px) {
+  .slide-layout {
+    grid-template-columns: 1fr;
+    text-align: center;
+    padding-top: 90px;
+    gap: 0.5rem;
+  }
+  .image-side {
+    order: -1;
+  }
+  .food-image {
+    max-width: 75%;
+    margin: 0 auto;
+  }
+  .swiper {
+    height: 90vh;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #ef4444;
+  border-radius: 10px;
+}

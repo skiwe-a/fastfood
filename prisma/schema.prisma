@@ -1,0 +1,484 @@
+// ============================================================
+// مخطط PostgreSQL — منصة FASTfood لوسائل التواصل الاجتماعي للمطاعم
+// PostgreSQL Schema — FASTfood Restaurant Social Media Platform
+// ============================================================
+// هذا الملف للإنتاج مع PostgreSQL — انسخه إلى prisma/schema.prisma
+// This file is for production with PostgreSQL — copy to prisma/schema.prisma
+// ثم شغّل: bun run db:push
+// Then run: bun run db:push
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ جداول المصادقة (NextAuth) / Auth Tables (NextAuth Standard) ============
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            Int
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       Int
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============ الجداول الأساسية / Core Tables ============
+
+enum Role {
+  CUSTOMER
+  RESTAURANT
+  ADMIN
+}
+
+enum TargetType {
+  MENU_ITEM
+  SERVICE
+  POST
+}
+
+enum RatingTargetType {
+  MENU_ITEM
+  SERVICE
+}
+
+enum PostType {
+  OFFER
+  NEWS
+  EVENT
+  DAILY_SPECIAL
+  REEL
+}
+
+model User {
+  id       Int    @id @default(autoincrement())
+  name     String
+  email    String @unique
+  password String
+  phone    String?
+  role     Role   @default(CUSTOMER)
+  image    String?
+  isActive    Boolean  @default(true)
+  isFrozen    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accounts     Account[]
+  sessions     Session[]
+  restaurantProfile RestaurantProfile?
+  likes        Like[]
+  ratings      Rating[]
+  follows      Follow[]
+  reviews      Review[]
+  comments     Comment[]
+  subscriptions UserSubscription[]
+  interactions       UserInteraction[]
+  algorithmWeights   UserAlgorithmWeights?
+  explorationGroup   ExplorationGroup?
+}
+
+model RestaurantProfile {
+  id                Int      @id @default(autoincrement())
+  userId            Int      @unique
+  slug              String   @unique
+  restaurantName    String
+  description       String
+  logo              String?
+  coverImage        String?
+  website           String?
+  whatsapp          String
+  phone             String?
+  address           String
+  city              String
+  area              String?
+  category          String
+  cuisineType       String?
+  openingHours      String
+  deliveryAvailable Boolean  @default(false)
+  minOrderAmount    Float?
+  isVerified        Boolean  @default(false)
+  isActive          Boolean  @default(true)
+  followersCount    Int      @default(0)
+  ratingsCount      Int      @default(0)
+  avgRating         Float    @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user       User         @relation(fields: [userId], references: [id])
+  menuItems  MenuItem[]
+  services   Service[]
+  offerPosts OfferPost[]
+  follows    Follow[]
+  reviews    Review[]
+  stories    Story[]
+  reels      Reel[]
+}
+
+model MenuItem {
+  id              Int      @id @default(autoincrement())
+  restaurantId    Int
+  name            String
+  description     String?
+  price           Float
+  currency        String   @default("SDG")
+  images          String?
+  category        String
+  isAvailable     Boolean  @default(true)
+  isPopular       Boolean  @default(false)
+  isSpicy         Boolean  @default(false)
+  preparationTime Int?
+  calories        Int?
+  likesCount      Int      @default(0)
+  avgRating       Float    @default(0)
+  ratingsCount    Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  restaurant RestaurantProfile @relation(fields: [restaurantId], references: [id])
+  likes     Like[]            @relation("MenuItemLikes")
+  ratings   Rating[]          @relation("MenuItemRatings")
+}
+
+model Service {
+  id             Int      @id @default(autoincrement())
+  restaurantId   Int
+  name           String
+  description    String
+  price          Float?
+  currency       String   @default("SDG")
+  images         String?
+  category       String
+  isAvailable    Boolean  @default(true)
+  likesCount     Int      @default(0)
+  avgRating      Float    @default(0)
+  ratingsCount   Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  restaurant RestaurantProfile @relation(fields: [restaurantId], references: [id])
+  likes     Like[]            @relation("ServiceLikes")
+  ratings   Rating[]          @relation("ServiceRatings")
+}
+
+model OfferPost {
+  id                 Int      @id @default(autoincrement())
+  restaurantId       Int
+  content            String
+  images             String?
+  type               PostType @default(OFFER)
+  startDate          DateTime?
+  endDate            DateTime?
+  discountPercentage Int?
+  likesCount         Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  restaurant RestaurantProfile @relation(fields: [restaurantId], references: [id])
+  likes     Like[]            @relation("PostLikes")
+  comments  Comment[]
+  media     PostMedia[]
+}
+
+model Like {
+  id        Int        @id @default(autoincrement())
+  userId    Int
+  targetType TargetType
+  targetId  Int
+  createdAt DateTime   @default(now())
+
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  menuItem  MenuItem?   @relation("MenuItemLikes", fields: [targetId], references: [id], map: "Like_menuItem_fkey")
+  service   Service?    @relation("ServiceLikes", fields: [targetId], references: [id], map: "Like_service_fkey")
+  offerPost OfferPost?  @relation("PostLikes", fields: [targetId], references: [id], map: "Like_offerPost_fkey")
+
+  @@unique([userId, targetType, targetId])
+}
+
+model Rating {
+  id        Int              @id @default(autoincrement())
+  userId    Int
+  targetType RatingTargetType
+  targetId  Int
+  score     Int
+  comment   String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  menuItem MenuItem? @relation("MenuItemRatings", fields: [targetId], references: [id], map: "Rating_menuItem_fkey")
+  service  Service?  @relation("ServiceRatings", fields: [targetId], references: [id], map: "Rating_service_fkey")
+
+  @@unique([userId, targetType, targetId])
+}
+
+model Review {
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  restaurantId   Int
+  rating         Int
+  title          String?
+  content        String
+  images         String?
+  foodRating     Int?
+  serviceRating  Int?
+  ambienceRating Int?
+  valueRating    Int?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restaurant RestaurantProfile @relation(fields: [restaurantId], references: [id])
+}
+
+model Follow {
+  id           Int      @id @default(autoincrement())
+  userId       Int
+  restaurantId Int
+  createdAt    DateTime @default(now())
+
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restaurant RestaurantProfile @relation(fields: [restaurantId], references: [id])
+
+  @@unique([userId, restaurantId])
+}
+
+// ============ نوع قصة / Story Type Enum ============
+
+enum StoryType {
+  IMAGE
+  VIDEO
+  TEXT
+}
+
+// ============ الميزات الاجتماعية / Social Features ============
+
+model Comment {
+  id         Int      @id @default(autoincrement())
+  content    String
+  postId     Int
+  userId     Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post OfferPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model PostMedia {
+  id         Int      @id @default(autoincrement())
+  postId     Int
+  mediaUrl   String
+  mediaType  String
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  post OfferPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+model Story {
+  id           Int       @id @default(autoincrement())
+  restaurantId Int
+  mediaUrl     String?
+  content      String?
+  storyType    StoryType @default(IMAGE)
+  bgColor      String?
+  expiresAt    DateTime
+  createdAt    DateTime  @default(now())
+
+  restaurant RestaurantProfile @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+}
+
+model Reel {
+  id           Int      @id @default(autoincrement())
+  restaurantId Int
+  videoUrl     String
+  thumbnailUrl String?
+  caption      String?
+  viewsCount   Int      @default(0)
+  likesCount   Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  restaurant RestaurantProfile @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+}
+
+// ============ خطط الاشتراك / Subscription Plans ============
+
+model SubscriptionPlan {
+  id          Int      @id @default(autoincrement())
+  name        String
+  nameEn      String
+  price       Float
+  currency    String   @default("SDG")
+  duration    Int      @default(30)
+  durationUnit String  @default("DAY")
+  features    String
+  maxMenuItems    Int @default(10)
+  maxPosts        Int @default(5)
+  maxStories      Int @default(3)
+  maxReels        Int @default(1)
+  maxServices     Int @default(3)
+  prioritySupport Boolean @default(false)
+  featuredListing Boolean @default(false)
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  subscriptions UserSubscription[]
+}
+
+// ============ اشتراكات المستخدمين / User Subscriptions ============
+
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+model UserSubscription {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  planId      Int
+  status      SubscriptionStatus @default(PENDING)
+  startDate   DateTime
+  endDate     DateTime
+  paymentRef  String?
+  paymentMethod String?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan SubscriptionPlan @relation(fields: [planId], references: [id])
+}
+
+// ============ إعدادات المنصة / Platform Settings ============
+
+model PlatformSetting {
+  id    Int    @id @default(autoincrement())
+  key   String @unique
+  value String
+  updatedAt DateTime @updatedAt
+}
+
+// ============ جداول الخوارزمية / Algorithm Tables ============
+
+// تضمينات المحتوى — مخزنة كمتجهات JSON
+// Content embeddings — stored as JSON vectors
+model ContentEmbedding {
+  id           Int      @id @default(autoincrement())
+  contentId    Int
+  contentType  String   // 'REEL', 'POST', 'STORY'
+  embedding    String   // JSON string of number[]
+  affectiveEmbedding String? // JSON string of number[] (16 dims)
+  tags         String?  // JSON string of string[]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([contentId, contentType])
+  @@index([contentType])
+}
+
+// سجل تفاعلات المستخدم التفصيلي
+// Detailed user interaction log
+model UserInteraction {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  contentId       Int
+  contentType     String   // 'REEL', 'POST', 'STORY'
+  interactionType String   // 'VIEW', 'LIKE', 'COMMENT', 'SHARE', 'SAVE', 'SCROLL_PAST', 'REWATCH', 'COMPLETE_WATCH'
+  watchDuration   Float?   // مدة المشاهدة بالثواني / seconds watched
+  totalDuration   Float?   // المدة الإجمالية للمحتوى بالثواني / total content duration in seconds
+  scrollVelocity  Float?   // سرعة التمرير / scroll velocity
+  sessionDuration Float?   // مدة الجلسة / session duration
+  createdAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // ✅ فهارس محسّنة للـ queries الشائعة في EFS engine
+  @@index([userId, createdAt])              // trainUserWeights: last 7 days
+  @@index([userId, contentType, createdAt]) // calculateUserHistoryFactor
+  @@index([userId, contentId, contentType]) // calculateInteractionScore
+  @@index([contentId, contentType])         // getContentVelocity
+  @@index([interactionType, createdAt])     // getAlgorithmMetrics
+  @@index([contentType, createdAt])         // fetchCandidates filter
+}
+
+// الأوزان المخصصة لكل مستخدم
+// Custom weights per user
+model UserAlgorithmWeights {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  w1        Float    @default(0.3)  // وزن التفاعلات / R weight
+  w2        Float    @default(0.25) // وزن إكمال المشاهدة / T weight
+  w3        Float    @default(0.2)  // وزن تشابه المحتوى / C weight
+  w4        Float    @default(0.1)  // وزن الإشارات الاجتماعية / S weight
+  w5        Float    @default(0.1)  // وزن سجل المستخدم / H weight
+  w6        Float    @default(0.05) // وزن تطابق التوقيت / U weight
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// مقاييس أداء الخوارزمية اليومية
+// Daily algorithm performance metrics
+model AlgorithmMetricsDaily {
+  id                  Int      @id @default(autoincrement())
+  date                DateTime @unique
+  totalFeedRequests   Int      @default(0)
+  avgEFSScore         Float    @default(0)
+  avgCompletionRate   Float    @default(0)
+  avgInteractionRate  Float    @default(0)
+  avgSessionDuration  Float    @default(0)
+  explorationRate     Float    @default(0.05)
+  irrScore            Float    @default(0) // معدل الاحتفاظ الفوري / Immediate Retention Rate
+  totalInteractions   Int      @default(0)
+  uniqueUsers         Int      @default(0)
+  createdAt           DateTime @default(now())
+}
+
+// سجل الاستكشاف A/B — أي المستخدمين في مجموعة الاستكشاف
+// A/B exploration log — which users are in the exploration group
+model ExplorationGroup {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  bucket    String   @default("control") // 'control' or 'exploration'
+  startDate DateTime @default(now())
+  endDate   DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
